@@ -1,4 +1,0 @@
-
-Two ways of implementing the flood fill algorithm are
-
-Depth-first search and breadth-first search
