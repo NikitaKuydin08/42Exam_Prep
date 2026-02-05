@@ -1,0 +1,87 @@
+If the number of arguments equals 1(argc == 1) || the second argument (argv[1][0] == '\0') || the number of arguments
+biggger than 2 (argc > 2)
+than return (1);
+else
+do operations
+
+
+PROGRAM filter
+
+INPUT: 
+  - argv[1] = pattern to search for (e.g., "abc")
+  - stdin = text stream to filter
+
+OUTPUT:
+  - stdout = filtered text with pattern replaced by asterisks
+
+─────────────────────────────────────────────────────────
+
+MAIN:
+    // 1. VALIDATE ARGUMENTS
+    if argc != 2 OR argv[1] is empty string:
+        return 1
+    
+    pattern = argv[1]
+    pattern_len = strlen(pattern)
+    
+    // 2. CREATE REPLACEMENT STRING (asterisks)
+    replacement = string of '*' repeated pattern_len times
+    
+    // 3. INITIALIZE BUFFER FOR PARTIAL MATCHES
+    buffer = empty dynamic buffer
+    buffer_len = 0
+    
+    // 4. READ LOOP (handle arbitrary read sizes)
+    while true:
+        read_buf[SOME_SIZE]
+        bytes_read = read(stdin, read_buf, SOME_SIZE)
+        
+        if bytes_read < 0:
+            print "Error: " + error_message to stderr
+            return 1
+        
+        if bytes_read == 0:  // EOF
+            break
+        
+        // Append new data to buffer
+        append read_buf to buffer
+        buffer_len += bytes_read
+    
+        // 5. SEARCH AND REPLACE LOOP
+        while buffer_len >= pattern_len:
+            match_pos = memmem(buffer, buffer_len, pattern, pattern_len)
+            
+            if match_pos is NULL:
+                // No match found
+                // We can safely output everything EXCEPT the last (pattern_len - 1) bytes
+                // (because a partial match might span the next read)
+                
+                safe_to_print = buffer_len - (pattern_len - 1)
+                if safe_to_print > 0:
+                    write(stdout, buffer, safe_to_print)
+                    memmove(buffer, buffer + safe_to_print, pattern_len - 1)
+                    buffer_len = pattern_len - 1
+                break
+            
+            else:
+                // Match found at match_pos
+                // Print everything before the match
+                bytes_before = match_pos - buffer
+                if bytes_before > 0:
+                    write(stdout, buffer, bytes_before)
+                
+                // Print the replacement (asterisks)
+                write(stdout, replacement, pattern_len)
+                
+                // Remove processed data from buffer
+                consumed = bytes_before + pattern_len
+                memmove(buffer, buffer + consumed, buffer_len - consumed)
+                buffer_len -= consumed
+    
+    // 6. AFTER EOF: Output any remaining data in buffer
+    if buffer_len > 0:
+        write(stdout, buffer, buffer_len)
+    
+    // 7. CLEANUP
+    free(buffer)
+    return 0

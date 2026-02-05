@@ -1,0 +1,73 @@
+Assignment name  : permutations
+Expected files   : *.c *.h
+Allowed functions: puts, malloc, calloc, realloc, free, write
+---------------------------------------------------------------
+
+Write a program that will print all the permutations of a string given as argument.
+
+The solutions must be given in alphabetical order.
+
+We will not try your program with strings containing duplicates (eg: 'abccd').
+
+For example this should work:
+
+$> ./permutations a | cat -e
+a$
+
+$> ./permutations ab | cat -e
+ab$
+ba$
+
+$> ./permutations abc | cat -e
+abc$
+acb$  acb - bac - bca - cab - cba
+bac$
+bca$
+cab$
+cba$
+
+$> ./permutations abc | cat -e
+abc
+acb
+bac
+bca
+cba
+cab
+
+
+$> ./permutations abcd | cat -e
+abcd$
+acbd
+bacd
+bcad
+cbad
+cabd
+dbca
+dcba
+
+
+a -start 
+
+
+./permutations abdc | cat -e
+
+sort - abcd
+Next permutation - 
+i = 0;
+i = len(4) - 2 = 2
+while (2 >= 0 || str[i] >= str[i + 1]) -- while (i >= 0 || c > d)
+j = len(4) - 1 = 3
+while (str[i] >= str[j]) -- while (c >= d)
+swap (c, d)
+nothing to reverse
+Result - abdc
+Next permutation
+i = 2
+while (2 >= 0 || d > c)
+i--; i = 1
+while (2 >= 0 || b > d)
+j = 3
+while (b > c)
+swap (b, c) -- acdb 
+reverse()
+
