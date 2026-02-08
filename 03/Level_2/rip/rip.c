@@ -6,7 +6,7 @@
 /*   By: Nikita_Kuydin <nikitakuydin@qmail.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/31 14:53:46 by Nikita_Kuyd       #+#    #+#             */
-/*   Updated: 2026/01/31 22:39:06 by Nikita_Kuyd      ###   ########.fr       */
+/*   Updated: 2026/02/07 15:39:40 by Nikita_Kuyd      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,23 +20,6 @@ int	ft_strlen(char	*str)
 		i++;
 	return (i);
 }
-
-// char	*save_the_state(char *cur_res)
-// {
-// 	int	i = 0;
-// 	char	*dest;
-
-// 	dest = malloc(sizeof(char) * ft_strlen(cur_res + 1));
-// 	if (!dest)
-// 		return (NULL);
-// 	while (cur_res[i])
-// 	{
-// 		dest[i] = cur_res[i];
-// 		i++;
-// 	}
-// 	dest[i] = '\0';
-// 	return(dest);
-// }
 
 void    count_invalid_parenthesis(t_res *res, char *str)
 {
@@ -110,8 +93,5 @@ int main(int argc, char **argv)
 		return (0);
 	cur_res[ft_strlen(argv[1])] = '\0';
 	count_invalid_parenthesis(struc, argv[1]);
-	// fin_res = malloc(1 * ft_strlen(argv[1]));
-	// if (!fin_res)
-	// 	return (1);
 	backktrack(argv[1], struc, 0, 0, cur_res);
 }

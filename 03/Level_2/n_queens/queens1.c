@@ -1,18 +1,18 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   queen.c                                            :+:      :+:    :+:   */
+/*   queens1.c                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: Nikita_Kuydin <nikitakuydin@qmail.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/02 20:32:22 by Nikita_Kuyd       #+#    #+#             */
-/*   Updated: 2026/02/07 12:50:32 by Nikita_Kuyd      ###   ########.fr       */
+/*   Created: 2026/02/06 23:46:16 by Nikita_Kuyd       #+#    #+#             */
+/*   Updated: 2026/02/07 12:49:54 by Nikita_Kuyd      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-// Allowed functions : atoi, fprintf, write, calloc, malloc, free, realloc, stdout, stderr
-
-#include "queen.h"
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
 int abs_int(int x)
 {
@@ -35,24 +35,24 @@ void print_solutions(int *pos, int n)
     fprintf(stdout, "\n");
 }
 
-int is_safe(int row, int column, int *pos)
+int is_safe(int col, int row, int *pos)
 {
     int prev_col = 0;
     int prev_row = 0;
-    
-    while (prev_col < column)
+
+    while (prev_col < col)
     {
         prev_row = pos[prev_col];
         if (prev_row == row)
             return (0);
-        if ((abs_int(prev_row - row) == abs_int(prev_col - column)))
+        if (abs_int(prev_row - row) == abs_int(prev_col - col))
             return (0);
         prev_col++;
     }
     return (1);
 }
 
-void    backtracking(int column, int n, int *pos)
+void solve(int column, int n, int *pos)
 {
     int row = 0;
     
@@ -63,10 +63,10 @@ void    backtracking(int column, int n, int *pos)
     }
     while (row < n)
     {
-        if (is_safe(row, column, pos))
+        if (is_safe(column, row, pos))
         {
             pos[column] = row;
-            backtracking(column + 1, n, pos);
+            solve(column + 1, n, pos);
         }
         row++;
     }
@@ -76,16 +76,17 @@ int main(int argc, char **argv)
 {
     int n;
     int *pos;
-
+    int column = 0;
+    
     if (argc != 2)
-        return (0);
+        return (1);
     n = atoi(argv[1]);
     if (n <= 0)
-        return (0);
+        return (1);
     pos = malloc(sizeof(int) * n);
     if (!pos)
-        return (0);
-    backtracking(0, n, pos);
+        return (1);
+    solve(column, n, pos);
     free(pos);
     return (0);
 }

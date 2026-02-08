@@ -6,7 +6,7 @@
 /*   By: Nikita_Kuydin <nikitakuydin@qmail.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/21 14:46:18 by Nikita_Kuyd       #+#    #+#             */
-/*   Updated: 2026/02/05 12:50:18 by Nikita_Kuyd      ###   ########.fr       */
+/*   Updated: 2026/02/07 12:37:19 by Nikita_Kuyd      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,8 +94,6 @@ int scan_int(FILE *stream, va_list *ap)
     ch = fgetc(stream);
     if (ch == EOF)
         return (-1);
-    while (isspace(ch))
-        ch = fgetc(stream);
     if (ch == '-')
     {
         sign = -1;
@@ -131,10 +129,6 @@ int scan_string(FILE *stream, va_list *ap)
     char    *sp = va_arg(*ap, char *);
     
     ch = fgetc(stream);
-    while (ch != EOF && isspace(ch))
-        ch = fgetc(stream);
-    if (ch == EOF)
-        return (-1);
     while (ch != EOF && !isspace(ch))
     {
         sp[i] = ch;
