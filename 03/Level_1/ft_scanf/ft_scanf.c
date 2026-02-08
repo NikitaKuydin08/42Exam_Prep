@@ -1,209 +1,185 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ft_scanf.c                                         :+:      :+:    :+:   */
+/*   ft_scanf2.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: Nikita_Kuydin <nikitakuydin@qmail.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/01/21 14:46:18 by Nikita_Kuyd       #+#    #+#             */
-/*   Updated: 2026/02/07 12:37:19 by Nikita_Kuyd      ###   ########.fr       */
+/*   Created: 2026/02/06 16:17:10 by Nikita_Kuyd       #+#    #+#             */
+/*   Updated: 2026/02/08 01:04:48 by Nikita_Kuyd      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <stdio.h>
-#include <unistd.h>
 #include <stdarg.h>
+#include <stdio.h>
 #include <ctype.h>
 
-// fgetc, ungetc, ferror, feof, isspace, isdigit, stdin, va_start, va_arg, va_copy, va_end
-
-int ft_vfscanf(FILE *stream, const char *format, va_list ap);
-
-int ft_scanf(const char *format, ...)
+int match_space(FILE *f)
 {
-    va_list ap;
-    int     result;
-
-    va_start(ap, format);
-    result = ft_vfscanf(stdin, format, ap);
-    va_end(ap);
-    return (result);
-}
-
-int skip_space(FILE *stream)
-{
-    /*
-     * WHITESPACE HANDLING:
-     * - Read characters while they are whitespace
-     * - Push back the first non-whitespace character to the stream
-     * - Return -1 on error
-     */
     int ch;
-    
-    while ((ch = fgetc(stream)) != EOF)
+
+    while ((ch = fgetc(f)) != EOF)
     {
         if (!isspace(ch))
         {
-            ungetc(ch, stream);
+            ungetc(ch, f);
             break ;
         }
     }
-    if (ferror(stream))
+    if (ferror(f))
         return (-1);
     return (0);
 }
 
-int match_char(FILE *stream, char c)
+int match_char(FILE *f, char c)
 {
-    /*
-     * LITERAL CHARACTER MATCHING:
-     * - Read one character from the stream
-     * - Check if it matches the expected one
-     * - Push it back if it does not match
-     */
     int ch;
 
-    ch = fgetc(stream);
+    ch = fgetc(f);
     if (ch == c)
         return (0);
     if (ch != EOF)
-        ungetc(ch, stream);
+        ungetc(ch, f);
     return (-1);
 }
 
-int scan_char(FILE *stream, va_list *ap)
+int scan_char(FILE *f, va_list *ap)
 {
-    int ch;
-
-    ch = fgetc(stream);
+    char    *c = va_arg(*ap, char *);
+    int     ch;
+    
+    ch = fgetc(f);
     if (ch == EOF)
         return (-1);
-    char *cp = va_arg(*ap, char *);
-    *cp = (char)ch;
+    *c = (char)ch;
     return (0);
 }
 
-int scan_int(FILE *stream, va_list *ap)
+int scan_int(FILE *f, va_list *ap)
 {
-    int ch;
-    int *ip = va_arg(*ap, int *);;
-    int sign = 1;
+    int *dig = va_arg(*ap, int *);
     int value = 0;
-    int count = 0;
+    int sign = 1;
+    int ch;
+    int valid = 0;
 
-    ch = fgetc(stream);
-    if (ch == EOF)
-        return (-1);
+    ch = fgetc(f);
     if (ch == '-')
     {
-        sign = -1;
-        ch = fgetc(stream);
+        sign *= -1;
+        ch = fgetc(f);
     }
-    else if (ch == '+')
-    {
-        ch = fgetc(stream);
-    }
+    if (ch == '+')
+        ch = fgetc(f);
     if (!isdigit(ch))
     {
-        ungetc(ch, stream);
+        if (ch != EOF)
+            ungetc(ch, f);
         return (-1);
     }
-    while (isdigit(ch))
+    while (ch != EOF && isdigit(ch))
     {
+        valid = 1;
         value = value * 10 + (ch - '0');
-        count++;
-        ch = fgetc(stream);
+        ch = fgetc(f);
     }
     if (ch != EOF)
-        ungetc(ch, stream);
-    if (count == 0)
+        ungetc(ch, f);
+    if (!valid)
         return (-1);
-    *ip = value * sign;
+    *dig = value * sign;
     return (0);
 }
 
-int scan_string(FILE *stream, va_list *ap)
+int scan_string(FILE *f, va_list *ap)
 {
-    int     ch;
+    char    *str = va_arg(*ap, char *);
     int     i = 0;
-    char    *sp = va_arg(*ap, char *);
-    
-    ch = fgetc(stream);
+    int     ch;
+
+    ch = fgetc(f);
     while (ch != EOF && !isspace(ch))
     {
-        sp[i] = ch;
+        str[i] = (char)ch;
+        ch = fgetc(f);
         i++;
-        ch = fgetc(stream);
     }
-    sp[i] = '\0';
+    str[i] = '\0';
     if (ch != EOF)
-        ungetc(ch, stream);
+        ungetc(ch, f);
     if (i == 0)
         return (-1);
     return (0);
 }
 
-int match_conv(FILE *stream, const char *c, va_list *ap)
+int match_conv(FILE *f, const char *c, va_list *ap)
 {
     if (*c == 'c')
-        return (scan_char(stream, ap));
+        return (scan_char(f, ap));
     else if (*c == 'd')
     {
-        skip_space(stream);
-        return (scan_int(stream, ap));
+        match_space(f);
+        return (scan_int(f, ap));
     }
     else if (*c == 's')
     {
-        skip_space(stream);
-        return (scan_string(stream, ap));
+        match_space(f);
+        return (scan_string(f, ap));
     }
-    else if (*c == EOF)
-        return (-1);
     else
         return (-1);
 }
 
-int ft_vfscanf(FILE *stream, const char *format, va_list ap)
+int ft_vfscanf(FILE *f, const char *format, va_list ap)
 {
-    int nsuccess;
-    int ch;
-    int i;
+	int nconv = 0;
+    int i = 0;
 
-    nsuccess = 0;
-    i = 0;
-    ch = fgetc(stream);
-    if (ch == EOF)
-        return (EOF);
-    ungetc(ch, stream);
-    while (format[i])
-    {
-        if (format[i] == '%')
-        {
-            if (match_conv(stream, &format[++i], &ap) != 0)
-                break ;
-            else
-                nsuccess++;
-        }
-        else if (isspace(format[i]))
-        {
-            if (skip_space(stream) == -1)
-                break ;
-        }
-        else if (match_char(stream, format[i]) != 0)
-            break ;
-        i++;
-    }
-    if (ferror(stream))
-        return (EOF);
-    return (nsuccess);
+	int c = fgetc(f);
+	if (c == EOF)
+		return EOF;
+	ungetc(c, f);
+
+	while (format[i])
+	{
+		if (format[i] == '%')
+		{
+			if (match_conv(f, &format[++i], &ap) == -1)
+				break;
+			else
+				nconv++;
+		}
+		else if (isspace(format[i]))
+		{
+			if (match_space(f) == -1)
+				break;
+		}
+		else if (match_char(f, format[i]) == -1)
+			break;
+		i++;
+	}
+	
+	if (ferror(f))
+		return EOF;
+	return nconv;
 }
 
-int main(void)
+int ft_scanf(const char *format, ...)
 {
-    int     dig;
-    char    c;
-    char    str[50];
-
-    int result = ft_scanf("%d %c %s", &dig, &c, str);
-    printf("Result: %d\nDigit: %d\nChar: %c\nString: %s", result, dig, c, str);
+	va_list ap;
+    
+    va_start(ap, format);
+	int result = ft_vfscanf(stdin, format, ap);
+	va_end(ap);
+	return (result);
 }
+
+// int main(void)
+// {
+//     int dig;
+//     char    c;
+//     char    str[50];
+
+//     int result = ft_scanf("%d %s %c", &dig, str, &c);
+//     printf("Result: %d\ndigit: %d\nstring: %s\nchar: %c", result, dig, str, c);
+// }

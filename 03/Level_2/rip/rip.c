@@ -1,97 +1,109 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   rip.c                                              :+:      :+:    :+:   */
+/*   rip1.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: Nikita_Kuydin <nikitakuydin@qmail.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/01/31 14:53:46 by Nikita_Kuyd       #+#    #+#             */
-/*   Updated: 2026/02/07 15:39:40 by Nikita_Kuyd      ###   ########.fr       */
+/*   Created: 2026/02/07 16:06:00 by Nikita_Kuyd       #+#    #+#             */
+/*   Updated: 2026/02/07 16:31:06 by Nikita_Kuyd      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "rip.h"
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-int	ft_strlen(char	*str)
+typedef struct s_res
 {
-	int	i = 0;
+    int open;
+    int close;
+}   t_res;
 
-	while (str[i])
-		i++;
-	return (i);
+int ft_strlen(char *str)
+{
+    int i = 0;
+
+    while (str[i])
+        i++;
+    return (i);
 }
 
-void    count_invalid_parenthesis(t_res *res, char *str)
+void    count_invalid_brackets(t_res *s, char *str)
 {
-	int    i = 0;
-	
-	while (str[i])
-	{
-		if (str[i] == '(')
-			res->open++;
-		else if (str[i] == ')')
-		{
-			if (res->open > 0)
-				res->open--;
-			else
-				res->close++;
-		}
-		i++;
-	}
+    int i = 0;
+
+    while (str[i])
+    {
+        if (str[i] == '(')
+            s->open++;
+        else if (str[i] == ')')
+        {
+            if (s->open > 0)
+                s->open--;
+            else
+                s->close++;
+        }
+        i++;
+    }
 }
 
-void    backktrack(char *str, t_res	*s, int i, int balance, char *cur_res)
+void    solve(char *str, t_res *s, int index, int balance, char *cur_result)
 {
-	if (i == ft_strlen(str))
-	{
-		if (balance == 0 && s->open == 0 && s->close == 0)
-			puts(cur_res);
-		return ;
-	}
-	if (str[i] == '(')
-	{
-		if (s->open > 0)
-		{
-			cur_res[i] = ' ';
-			s->open--;
-			backktrack(str, s, i + 1, balance, cur_res);
-			s->open++;
-		}
-		cur_res[i] = '(';
-		backktrack(str, s, i + 1, balance + 1, cur_res);
-	}
-	else if (str[i] == ')')
-	{
-		if (s->close > 0)
-		{
-			cur_res[i] = ' ';
-			s->close--;
-			backktrack(str, s, i + 1, balance, cur_res);
-			s->close++;
-		}
-		if (balance > 0)
-		{
-			cur_res[i] = ')';
-			backktrack(str, s, i + 1, balance - 1, cur_res);
-		}
-	}
+    if (index == ft_strlen(str)) // the first and only case to exit the recursion
+    {
+        if (balance == 0 && s->open == 0 && s->close == 0)
+            puts(cur_result);
+        return ;
+    }
+    if (str[index] == '(') // the first case, opening bracket
+    {
+        if (s->open > 0)
+        {
+            cur_result[index] = ' ';
+            s->open--;
+            solve(str, s, index + 1, balance, cur_result);
+            s->open++;
+        }
+        cur_result[index] = '(';
+        solve(str, s, index + 1, balance + 1, cur_result);
+    }
+    else if (str[index] == ')')
+    {
+        if (s->close > 0)
+        {
+            cur_result[index] = ' ';
+            s->close--;
+            solve(str, s, index + 1, balance, cur_result);
+            s->close++;
+        }
+        if (balance > 0)
+        {
+            cur_result[index] = ')';
+            solve(str, s, index + 1, balance - 1, cur_result);
+        }
+    }
 }
 
 int main(int argc, char **argv)
 {
-	t_res	*struc;
-	char	*cur_res;
-
-	(void)argc;
-	struc = malloc(sizeof(t_res));
-	if (!struc)
-		return (0);
-	struc->open = 0;
-	struc->close = 0;
-	cur_res = malloc(1 * (ft_strlen(argv[1]) + 1));
-	if (!cur_res)
-		return (0);
-	cur_res[ft_strlen(argv[1])] = '\0';
-	count_invalid_parenthesis(struc, argv[1]);
-	backktrack(argv[1], struc, 0, 0, cur_res);
+    char    *cur_result;
+    t_res   *s;
+    
+    if (argc != 2)
+        return (1);
+    s = malloc(sizeof(t_res));
+    if (!s)
+        return (1);
+    s->open = 0;
+    s->close = 0;
+    cur_result = malloc(sizeof(char) * (ft_strlen(argv[1]) + 1));
+    if (!cur_result)
+        return (1);
+    cur_result[ft_strlen(argv[1])] = '\0';
+    count_invalid_brackets(s, argv[1]);
+    solve(argv[1], s, 0, 0, cur_result);
+    free(s);
+    free(cur_result);
+    return (0);
 }

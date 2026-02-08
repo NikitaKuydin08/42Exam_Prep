@@ -1,121 +1,115 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   tsp.c                                              :+:      :+:    :+:   */
+/*   tsp1.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: Nikita_Kuydin <nikitakuydin@qmail.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/04 15:25:01 by Nikita_Kuyd       #+#    #+#             */
-/*   Updated: 2026/02/04 15:25:11 by Nikita_Kuyd      ###   ########.fr       */
+/*   Created: 2026/02/07 18:33:44 by Nikita_Kuyd       #+#    #+#             */
+/*   Updated: 2026/02/08 00:50:11 by Nikita_Kuyd      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "tsp.h"
-#include <math.h>
+#include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <math.h>
 
-static float
-dist(float x1, float y1, float x2, float y2)
+typedef struct s_city
 {
-	float dx = x1 - x2;
-	float dy = y1 - y2;
+    int     n;
+    float x[11];
+    float y[11];
+    float dist[11][11];
+    int   visited[11];
+    float best_road;
+}   t_city;
 
-	return (sqrtf(dx * dx + dy * dy));
+void    read_city_stdin(t_city *c)
+{
+    c->n = 0;
+
+    while (c->n < 11 && (fscanf(stdin, "%f, %f\n", &c->x[c->n], &c->y[c->n])) == 2)
+        c->n++;
 }
 
-static int
-read_cities(float *x, float *y)
+float   calculate_distance(float x1, float y1, float x2, float y2)
 {
-	int		n = 0;
-	float	cx;
-	float	cy;
-
-	while (n < MAX_CITIES && fscanf(stdin, " %f , %f", &cx, &cy) == 2)
-	{
-		x[n] = cx;
-		y[n] = cy;
-		n++;
-	}
-	return (n);
+    float dx = x2 - x1;
+    float dy = y2 - y1;
+    return (sqrtf(dx * dx + dy * dy));
 }
 
-static void
-build_dist(float d[MAX_CITIES][MAX_CITIES], float *x, float *y, int n)
+void    build_distance(t_city *c)
 {
-	int i;
-	int j;
+    int i = 0;
+    int j;
 
-	for (i = 0; i < n; i++)
-		for (j = 0; j < n; j++)
-			d[i][j] = dist(x[i], y[i], x[j], y[j]);
+    while (i < c->n)
+    {
+        j = 0;
+        while (j < c->n)
+        {
+            c->dist[i][j] = calculate_distance(c->x[i], c->y[i], c->x[j], c->y[j]);
+            j++;
+        }
+        i++;
+    }
 }
 
-static float
-solve_tsp(float d[MAX_CITIES][MAX_CITIES], int n)
+void    solve(t_city *c, int current, int visit_count, float cost)
 {
-	int		all = (1 << n) - 1;
-	float	*dp = (float *)malloc(sizeof(float) * (all + 1) * n);
-	int		mask;
-	int		i;
-	int		next;
-	float	best;
+    float   total;
+    int     i = 1;
 
-	if (!dp)
-		return (-1.0f);
-	for (mask = 0; mask <= all; mask++)
-		for (i = 0; i < n; i++)
-			dp[mask * n + i] = 1e30f;
-	dp[1 * n + 0] = 0.0f;
-	for (mask = 1; mask <= all; mask++)
-	{
-		for (i = 0; i < n; i++)
-		{
-			float cur = dp[mask * n + i];
-
-			if (cur >= 1e29f)
-				continue ;
-			for (next = 0; next < n; next++)
-			{
-				int bit = 1 << next;
-
-				if (mask & bit)
-					continue ;
-				if (cur + d[i][next] < dp[(mask | bit) * n + next])
-					dp[(mask | bit) * n + next] = cur + d[i][next];
-			}
-		}
-	}
-	best = 1e30f;
-	for (i = 0; i < n; i++)
-	{
-		float cand = dp[all * n + i] + d[i][0];
-
-		if (cand < best)
-			best = cand;
-	}
-	free(dp);
-	return (best);
+    if (cost >= c->best_road)
+        return ;
+    if (visit_count == c->n)
+    {
+        total = cost + c->dist[current][0];
+        if (total < c->best_road)
+            c->best_road = total;
+        return ;
+    }
+    while (i < c->n)
+    {
+        if (!c->visited[i])
+        {
+            c->visited[i] = 1;
+            cost += c->dist[current][i];
+            solve(c, i, visit_count + 1, cost);
+            cost -= c->dist[current][i];
+            c->visited[i] = 0;
+        }
+        i++;
+    }
 }
 
-int	main(void)
+int main(void)
 {
-	float	x[MAX_CITIES];
-	float	y[MAX_CITIES];
-	float	d[MAX_CITIES][MAX_CITIES];
-	int		n;
-	float	best;
-
-	n = read_cities(x, y);
-	if (n == 0)
-	{
-		fprintf(stdout, "0.00\n");
-		return (0);
-	}
-	build_dist(d, x, y, n);
-	best = solve_tsp(d, n);
-	if (best < 0.0f)
-		return (1);
-	fprintf(stdout, "%.2f\n", best);
-	return (0);
+    t_city *cities;
+    int     i = 0;
+    
+    cities = malloc(sizeof(t_city));
+    if (!cities)
+        return (1);
+    read_city_stdin(cities);
+    if (cities->n <= 1)
+    {
+        free(cities);
+        fprintf(stdout, "0.00\n");
+        return (0);
+    }
+    build_distance(cities);
+    while (i < cities->n)
+    {
+        cities->visited[i] = 0;
+        i++;
+    }
+    cities->best_road = 1e30f;
+    cities->visited[0] = 1;
+    solve(cities, 0, 1, 0.0f);
+    fprintf(stdout, "%.2f\n", cities->best_road);
+    free(cities);
+    return (0);
 }
