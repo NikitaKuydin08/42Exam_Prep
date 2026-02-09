@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   rip1.c                                             :+:      :+:    :+:   */
+/*   rip.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: Nikita_Kuydin <nikitakuydin@qmail.com>     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/07 16:06:00 by Nikita_Kuyd       #+#    #+#             */
-/*   Updated: 2026/02/07 16:31:06 by Nikita_Kuyd      ###   ########.fr       */
+/*   Updated: 2026/02/09 12:22:33 by Nikita_Kuyd      ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct s_res
+typedef struct s_rip
 {
     int open;
     int close;
-}   t_res;
+}   t_rip;
 
 int ft_strlen(char *str)
 {
@@ -29,7 +29,7 @@ int ft_strlen(char *str)
     return (i);
 }
 
-void    count_invalid_brackets(t_res *s, char *str)
+void    count_invalid_brackets(t_rip *s, char *str)
 {
     int i = 0;
 
@@ -48,7 +48,7 @@ void    count_invalid_brackets(t_res *s, char *str)
     }
 }
 
-void    solve(char *str, t_res *s, int index, int balance, char *cur_result)
+void    solve(char *str, t_rip *s, int index, int balance, char *cur_result)
 {
     if (index == ft_strlen(str)) // the first and only case to exit the recursion
     {
@@ -88,11 +88,11 @@ void    solve(char *str, t_res *s, int index, int balance, char *cur_result)
 int main(int argc, char **argv)
 {
     char    *cur_result;
-    t_res   *s;
+    t_rip   *s;
     
     if (argc != 2)
         return (1);
-    s = malloc(sizeof(t_res));
+    s = malloc(sizeof(t_rip));
     if (!s)
         return (1);
     s->open = 0;
