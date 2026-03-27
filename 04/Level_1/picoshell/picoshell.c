@@ -86,8 +86,8 @@ int    picoshell(char **cmds[])
     pid_t   pid;
 
     i = 0;
-    if (!cmds)
-        return (1);
+    if (!cmds || !cmds[0])
+        return (0);
     prev_read_fd = -1;
     while (cmds[i])
     {
@@ -138,54 +138,54 @@ int    picoshell(char **cmds[])
     return (wait_for_all());
 }
 
- static int count_cmds(int argc, char **argv)
- {
-     int count = 1;
-     for (int i = 1; i < argc; i++)
-     {
-         if (strcmp(argv[i], "|") == 0)
-             count++;
-     }
-     return count;
- }
+//  static int count_cmds(int argc, char **argv)
+//  {
+//      int count = 1;
+//      for (int i = 1; i < argc; i++)
+//      {
+//          if (strcmp(argv[i], "|") == 0)
+//              count++;
+//      }
+//      return count;
+//  }
 
- int main(int argc, char **argv)
- {
-     if (argc < 2)
-         return (fprintf(stderr, "Usage: %s cmd1 [args] | cmd2 [args] ...\n", argv[0]), 1);
+//  int main(int argc, char **argv)
+//  {
+//      if (argc < 2)
+//          return (fprintf(stderr, "Usage: %s cmd1 [args] | cmd2 [args] ...\n", argv[0]), 1);
 
-     int cmd_count = count_cmds(argc, argv);
-     char ***cmds = calloc(cmd_count + 1, sizeof(char **));
-     if (!cmds)
-         return (perror("calloc"), 1);
+//      int cmd_count = count_cmds(argc, argv);
+//      char ***cmds = calloc(cmd_count + 1, sizeof(char **));
+//      if (!cmds)
+//          return (perror("calloc"), 1);
 
-     // Parse arguments and build command array
-     int i = 1, j = 0;
-     while (i < argc)
-     {
-         int len = 0;
-         while (i + len < argc && strcmp(argv[i + len], "|") != 0)
-             len++;
+//      // Parse arguments and build command array
+//      int i = 1, j = 0;
+//      while (i < argc)
+//      {
+//          int len = 0;
+//          while (i + len < argc && strcmp(argv[i + len], "|") != 0)
+//              len++;
 
-         cmds[j] = calloc(len + 1, sizeof(char *));
-        if (!cmds[j])
-            return (perror("calloc"), 1);
+//          cmds[j] = calloc(len + 1, sizeof(char *));
+//         if (!cmds[j])
+//             return (perror("calloc"), 1);
 
-        for (int k = 0; k < len; k++)
-            cmds[j][k] = argv[i + k];
-        cmds[j][len] = NULL;
+//         for (int k = 0; k < len; k++)
+//             cmds[j][k] = argv[i + k];
+//         cmds[j][len] = NULL;
 
-         i += len + 1;  // Skip the "|"
-        j++;
-    }
-    cmds[cmd_count] = NULL;
+//          i += len + 1;  // Skip the "|"
+//         j++;
+//     }
+//     cmds[cmd_count] = NULL;
 
-    int ret = picoshell(cmds);
+//     int ret = picoshell(cmds);
 
-     // Free memory
-    for (int i = 0; cmds[i]; i++)
-        free(cmds[i]);
-    free(cmds);
+//      // Free memory
+//     for (int i = 0; cmds[i]; i++)
+//         free(cmds[i]);
+//     free(cmds);
 
-    return ret;
-}
+//     return ret;
+// }
