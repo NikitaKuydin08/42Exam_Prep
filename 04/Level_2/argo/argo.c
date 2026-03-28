@@ -84,7 +84,10 @@ int parse_value(json *dst, FILE *stream)
 int parse_integer(json *dst, FILE *stream)
 {
 	if (fscanf(stream, "%d", &dst->integer) != 1)
+	{
+		unexpected(stream);
 		return (-1);
+	}
 	dst->type = INTEGER;
 	return (1);
 }
